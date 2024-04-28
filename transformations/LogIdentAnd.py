@@ -1,4 +1,4 @@
-import Transformation
+from Transformation import Transformation
 from pysmt.shortcuts import And, Or, Not, Symbol
 from helper.FormulaHelper import generate_free_unused
 from pysmt.typing import INT

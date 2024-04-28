@@ -1,4 +1,4 @@
-import Transformation
+from Transformation import Transformation
 from pysmt.shortcuts import And, Or
 
 class AbsorpAnd(Transformation):
