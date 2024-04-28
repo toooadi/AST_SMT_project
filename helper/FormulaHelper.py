@@ -3,9 +3,6 @@ import string
 import random
 from functools import reduce
 
-from pysmt.shortcuts import And, Symbol, ForAll, Exists, GE
-from pysmt.typing import BOOL
-
 def generate_free_unused(f: pysmt.fnode) -> str:
     quantVars = get_quant_vars(f)
     usedVars = set([str(s) for s in f.get_free_variables()] + quantVars)
