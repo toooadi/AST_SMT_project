@@ -7,4 +7,4 @@ class AbsorpAnd(Transformation):
         return True
     
     def apply(self, f, g):
-        
+        return And(f, Or(f, g))
