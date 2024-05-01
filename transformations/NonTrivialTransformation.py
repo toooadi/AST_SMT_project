@@ -1,4 +1,4 @@
-from Transformation import Transformation
+from transformations.Transformation import Transformation
 
 class NonTrivialTransformation(Transformation):
 

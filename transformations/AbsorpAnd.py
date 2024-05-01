@@ -1,4 +1,4 @@
-from Transformation import Transformation
+from transformations.Transformation import Transformation
 from pysmt.shortcuts import And, Or
 
 class AbsorpAnd(Transformation):
@@ -8,3 +8,6 @@ class AbsorpAnd(Transformation):
     
     def apply(self, f, g):
         return And(f, Or(f, g))
+    
+    def is_generating_transformation(self):
+        return True

@@ -1,4 +1,4 @@
-from Transformation import Transformation
+from transformations.Transformation import Transformation
 from pysmt.shortcuts import And
 
 class IdempAnd(Transformation):

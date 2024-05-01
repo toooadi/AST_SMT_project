@@ -1,4 +1,4 @@
-from NonTrivialTransformation import NonTrivialTransformation
+from transformations.NonTrivialTransformation import NonTrivialTransformation
 from pysmt.shortcuts import Or, Not
 
 class DeMorgAnd(NonTrivialTransformation):

@@ -20,7 +20,7 @@ class Transformation:
     """
 
     def is_directly_applicable(self, f: pysmt.fnode) -> bool:
-        pass
+        return True
 
     """
     apply(f): Perform the transformation on formula f
@@ -39,3 +39,6 @@ class Transformation:
     """
     def apply(self, f: pysmt.fnode, g: pysmt.fnode) -> pysmt.fnode:
         pass
+
+    def is_generating_transformation(self):
+        return False

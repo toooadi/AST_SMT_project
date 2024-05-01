@@ -1,10 +1,10 @@
-from NonTrivialTransformation import NonTrivialTransformation
+from transformations.NonTrivialTransformation import NonTrivialTransformation
 from pysmt.shortcuts import Exists, Not
 
 class ForAllNot(NonTrivialTransformation):
 
     def is_directly_applicable(self, f):
-        return f.is_forAll() and len(f.args()) == 1 and f.arg(0).is_not()
+        return f.is_forall() and len(f.args()) == 1 and f.arg(0).is_not()
     
     def apply(self, f):
         if (not self.is_directly_applicable(f)):
