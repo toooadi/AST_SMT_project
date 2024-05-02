@@ -28,3 +28,10 @@ class EquivalentTransformer:
         applicable = self.get_applicable_transformations(formula)
         self.substituter.set_transformation(allTf.all_dict[transformationId])
         return self.substituter.substitute(formula, generating_formula)
+    
+def main():
+    #TODO: Implement fetching of formulas from SMT-LIB suite, transformation etc. Implement with parameters like #transformations etc.
+    pass
+
+if __name__ == "__main__":
+    main()
