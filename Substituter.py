@@ -16,10 +16,10 @@ class FirstOccurenceSubstituter:
         self.manager = FormulaManager(get_env())
         self.substituted = False
     
-    def substitute(self, formula):
+    def substitute(self, formula, generating_formula=None):
         if (self.transformation.is_directly_applicable(formula)):
             self.substituted = True
-            return self.transformation.apply(formula)
+            return self.transformation.apply(formula) if (not generating_formula) else self.transformation.apply(formula, generating_formula)
         
         sub_function = self.mapper.get_sub_function(formula.node_type())
         if (not self.substituted and sub_function):

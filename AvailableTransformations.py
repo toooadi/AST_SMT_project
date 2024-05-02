@@ -17,7 +17,7 @@ EXISTS_SPLIT = 13
 ##can include rules 7-10 later, these are probably easy to detect
 
 PROP_LOGIC = [i for i in range(10)]
-PRED_LOGIC = [i for i in range (10, 13)]
+PRED_LOGIC = [i for i in range (10, 14)]
 ALL = PROP_LOGIC + PRED_LOGIC
 
 all_dict = {

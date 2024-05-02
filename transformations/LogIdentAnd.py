@@ -9,6 +9,8 @@ class LogIdentAnd(Transformation):
     def is_applicable(self, f):
         return True
     
-    def apply(self, f):
-        newSymb = generate_free_unused(f)
-        return And(f, Or(Symbol(newSymb, INT), Not(Symbol(newSymb, INT))))
+    def is_generating_transformation(self):
+        return True
+    
+    def apply(self, f, g):
+        return And(f, Or(g, Not(g)))
