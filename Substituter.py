@@ -17,17 +17,67 @@ class FirstOccurenceSubstituter:
         self.substituted = False
     
     def substitute(self, formula, generating_formula=None):
+        if (self.substituted):
+            return formula
+
         if (self.transformation.is_directly_applicable(formula)):
             self.substituted = True
             return self.transformation.apply(formula) if (not generating_formula) else self.transformation.apply(formula, generating_formula)
         
         sub_function = self.mapper.get_sub_function(formula.node_type())
-        if (not self.substituted and sub_function):
-            return sub_function(formula, [self.substitute(f) for f in formula.args()])
+        if (sub_function):
+            return sub_function(formula, [self.substitute(f, generating_formula) for f in formula.args()])
         
+        #Last case: any literal will obviously not be substituted
         return formula
 
+#substitutes at the first transformable occurence at depth >= subDepth
+#If there is no substitution at the aspired depth, the deepest transformable formula will be substituted
+class NDepthSubstituter(FirstOccurenceSubstituter):
 
+    def __init__(self, transformation: Transformation, subDepth) -> None:
+        super().__init__(transformation)
+        self.subDepth = subDepth
+        self.currentDepth = -1
+
+    def set_transformation(self, transformation: Transformation):
+        super().set_transformation(transformation)
+        self.currentDepth = -1
+
+    def set_subDepth(self, subDepth):
+        self.subDepth = subDepth
+
+    def substitute(self, formula, generating_formula=None):
+        try:
+            if (self.substituted):
+                return formula
+            
+            self.currentDepth += 1
+
+            if (self.transformation.is_directly_applicable(formula)):
+                if (self.currentDepth >= self.subDepth):
+                    self.substituted = True
+                    return self.transformation.apply(formula) if (not generating_formula) else self.transformation.apply(formula, generating_formula)
+                
+                sub_function = self.mapper.get_sub_function(formula.node_type())
+                if (sub_function):
+                    children = [self.substitute(f, generating_formula) for f in formula.args()]
+                    if (self.substituted):
+                        return sub_function(formula, children)
+                    else:
+                        self.substituted = True
+                        return self.transformation.apply(formula) if (not generating_formula) else self.transformation.apply(formula, generating_formula)
+            
+            sub_function = self.mapper.get_sub_function(formula.node_type())
+            if (sub_function):
+                return sub_function(formula, [self.substitute(f, generating_formula) for f in formula.args()])
+
+            return formula
+
+        finally:
+            self.currentDepth -= 1           
+            
+    
 
 class FnodeTMapper:
 

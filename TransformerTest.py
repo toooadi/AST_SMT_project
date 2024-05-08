@@ -103,7 +103,29 @@ class TestTransformationsSimple(unittest.TestCase):
             And(ForAll([Symbol("A")], Symbol("A")), ForAll([Symbol("A")], Symbol("B"))),
             self.transformer.transform(formula, all.FORALL_SPLIT)
         )
-    
+
+class TestTransformationsDepth(unittest.TestCase):
+    transformer = EquivalentTransformer(2)
+    generating_formula = And(Symbol("FV1"), Symbol("FV2"))
+
+    def test_depthDistrAndCorrect(self):
+        formula = And(Symbol("A"), Or(Symbol("B"), And(Symbol("C"), Or(Symbol("D"), Symbol("E")))))
+        self.assertTrue(all.DISTR_AND in self.transformer.get_applicable_transformations(formula))
+        self.assertEqual(
+             #have to convert to string because objects are being reinstantiated and pySMT doesn't modify __eq__ for its formulae
+            str(And(Symbol("A"), Or(Symbol("B"), Or(And(Symbol("C"), Symbol("D")), And(Symbol("C"), Symbol("E")))))),
+            str(self.transformer.transform(formula, all.DISTR_AND))
+        )
+
+    #Test whether it still correctly transforms even if there is no transformation at depth >= subDepth
+    def test_distrAndFallback(self):
+        formula = And(Symbol("A"), Or(Symbol("B"), Symbol("C")))
+        self.assertTrue(all.DISTR_AND in self.transformer.get_applicable_transformations(formula))
+        self.assertEqual(
+            Or(And(Symbol("A"), Symbol("B")), And(Symbol("A"), Symbol("C"))),
+            self.transformer.transform(formula, all.DISTR_AND)
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
