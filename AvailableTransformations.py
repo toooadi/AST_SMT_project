@@ -20,7 +20,7 @@ PROP_LOGIC = [i for i in range(10)]
 PRED_LOGIC = [i for i in range (10, 14)]
 ALL = PROP_LOGIC + PRED_LOGIC
 
-all_dict = {
+obj_dict = {
     LOG_IDENT_AND : LogIdentAnd.LogIdentAnd(),
     LOG_IDENT_OR : LogIdentOr.LogIdentOr(),
     DISTR_AND : DistrAnd.DistrAnd(),
@@ -35,4 +35,23 @@ all_dict = {
     FORALL_NOT : ForAllNot.ForAllNot(),
     FORALL_SPLIT : ForAllSplit.ForAllSplit(),
     EXISTS_SPLIT : ExistsSplit.ExistsSplit()    
+}
+
+#This determines the weights of the operations. Operations which are always applicable will have a lower weight
+#so that when a more rarely applicable operation IS available, it is picked with a higher probability.
+weights = {
+    LOG_IDENT_AND : 2,
+    LOG_IDENT_OR : 2,
+    DISTR_AND : 5,
+    DISTR_OR : 5,
+    DEMORG_AND : 7,
+    DEMORG_OR : 7,
+    ABSORP_AND : 2,
+    ABSORP_OR : 2,
+    IDEMP_AND : 2,
+    IDEMP_OR : 2,
+    EXISTS_NOT : 7,
+    FORALL_NOT : 7,
+    FORALL_SPLIT : 7,
+    EXISTS_SPLIT : 7    
 }

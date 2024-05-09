@@ -24,15 +24,18 @@ class FirstOccurenceSubstituter:
             self.substituted = True
             return self.transformation.apply(formula) if (not generating_formula) else self.transformation.apply(formula, generating_formula)
         
+        #maybe put this before the directly_applicable check if it is slow
         sub_function = self.mapper.get_sub_function(formula.node_type())
         if (sub_function):
             return sub_function(formula, [self.substitute(f, generating_formula) for f in formula.args()])
         
         #Last case: any literal will obviously not be substituted
         return formula
-
-#substitutes at the first transformable occurence at depth >= subDepth
-#If there is no substitution at the aspired depth, the deepest transformable formula will be substituted
+    
+"""
+substitutes at the first transformable occurence at depth >= subDepth
+If there is no substitution at the aspired depth, the deepest transformable formula will be substituted
+"""
 class NDepthSubstituter(FirstOccurenceSubstituter):
 
     def __init__(self, transformation: Transformation, subDepth) -> None:
@@ -88,7 +91,9 @@ class FnodeTMapper:
             op.OR : self.subOr,
             op.NOT : self.subNot,
             op.FORALL : self.subForAll,
-            op.EXISTS : self.subExists
+            op.EXISTS : self.subExists,
+            op.IMPLIES : self.subImplies,
+            op.IFF : self.subIff
         }
 
     def get_sub_function(self, op):
@@ -111,3 +116,9 @@ class FnodeTMapper:
     
     def subExists(self, formula, args):
         return self.manager.Exists([f for f in formula.quantifier_vars()], args[0])
+    
+    def subImplies(self, formula, args):
+        return self.manager.Implies(args[0], args[1])
+    
+    def subIff(self, formula, args):
+        return self.manager.Iff(args[0], args[1])
