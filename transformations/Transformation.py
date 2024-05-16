@@ -1,4 +1,5 @@
 import pysmt.fnode
+from helper.FormulaHelper import is_op_returns_bool
 
 class Transformation:
     """
@@ -16,11 +17,12 @@ class Transformation:
 
     """
     is_directly_applicable(f): Tells us whether the transformation can be
-        applied to formula f directly
+        applied to formula f directly. Trivially, since we are using boolean
+        transformations, formula MUST be some kind of boolean operator (E.g. And, Or, LE, Eq)
     """
 
     def is_directly_applicable(self, f: pysmt.fnode) -> bool:
-        return True
+        return is_op_returns_bool(f)
 
     """
     apply(f): Perform the transformation on formula f

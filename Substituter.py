@@ -2,6 +2,7 @@ import pysmt.operators as op
 from pysmt.formula import FormulaManager
 from transformations.Transformation import Transformation
 from pysmt.shortcuts import get_env
+from helper.FormulaHelper import find_maxDepth
 
 class FirstOccurenceSubstituter:
     manager = FormulaManager(get_env())
@@ -31,7 +32,7 @@ class FirstOccurenceSubstituter:
         
         #Last case: any literal will obviously not be substituted
         return formula
-    
+        
 """
 substitutes at the first transformable occurence at depth >= subDepth
 If there is no substitution at the aspired depth, the deepest transformable formula will be substituted
@@ -42,43 +43,45 @@ class NDepthSubstituter(FirstOccurenceSubstituter):
         super().__init__(transformation)
         self.subDepth = subDepth
         self.currentDepth = -1
+        self.maxDepth = -1
 
     def set_transformation(self, transformation: Transformation):
         super().set_transformation(transformation)
         self.currentDepth = -1
+        self.maxDepth = -1
 
     def set_subDepth(self, subDepth):
         self.subDepth = subDepth
 
+    #max_depth is first calculated, then transform only on max depth if smaller than subDepth
     def substitute(self, formula, generating_formula=None):
+        self.maxDepth = find_maxDepth(formula, -1)
+        return self.substitute_walker(formula, generating_formula)
+
+    #Do the actual substitution work
+    def substitute_walker(self, formula, generating_formula):
         try:
             if (self.substituted):
                 return formula
             
             self.currentDepth += 1
 
-            if (self.transformation.is_directly_applicable(formula)):
-                if (self.currentDepth >= self.subDepth):
-                    self.substituted = True
-                    return self.transformation.apply(formula) if (not generating_formula) else self.transformation.apply(formula, generating_formula)
-                
+            if (self.currentDepth >= self.subDepth and self.transformation.is_directly_applicable(formula)):
+                self.substituted = True
+                return self.transformation.apply(formula) if (not generating_formula) else self.transformation.apply(formula, generating_formula)
+            elif (self.currentDepth >= self.maxDepth and self.transformation.is_directly_applicable(formula)):
+                self.substituted = True
+                return self.transformation.apply(formula) if (not generating_formula) else self.transformation.apply(formula, generating_formula)
+            else:
                 sub_function = self.mapper.get_sub_function(formula.node_type())
                 if (sub_function):
-                    children = [self.substitute(f, generating_formula) for f in formula.args()]
-                    if (self.substituted):
-                        return sub_function(formula, children)
-                    else:
-                        self.substituted = True
-                        return self.transformation.apply(formula) if (not generating_formula) else self.transformation.apply(formula, generating_formula)
-            
-            sub_function = self.mapper.get_sub_function(formula.node_type())
-            if (sub_function):
-                return sub_function(formula, [self.substitute(f, generating_formula) for f in formula.args()])
-
+                    return sub_function(formula, [self.substitute_walker(f, generating_formula) for f in formula.args()])
+                
             return formula
 
         finally:
-            self.currentDepth -= 1           
+            self.currentDepth -= 1
+
             
     
 
