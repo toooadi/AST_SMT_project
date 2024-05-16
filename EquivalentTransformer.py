@@ -63,6 +63,7 @@ Performs a fixed amount of transformations on each formula and tests for satisfi
 I would recommend passing a rather high number to the Equivalent Transformer as this determines at which
 depth the transformations are done. Since many of the transformations extend the formula (think of e.g. distributivity),
 the formula size may explode for a high transformation/substitution-depth.
+Passing the option --keep-generated files to the python command stores the generated file in the /generated folder.
 """ 
 def main():
     parser = SmtLibParser()
