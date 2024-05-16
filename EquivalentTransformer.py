@@ -65,6 +65,9 @@ depth the transformations are done. Since many of the transformations extend the
 the formula size may explode for a high transformation/substitution-depth.
 Passing the option --keep-generated files to the python command stores the generated file in the /generated folder.
 """ 
+#TODO: Might want to think about "randomizing" the order of the uppermost formula's children (which is a concatenation of
+#       assert statements in the original file MOST OF TIMES. This way we can avoid only operating only on the first assert)
+#       This randomization would have to happen after some of the transformations have already been performed.
 def main():
     parser = SmtLibParser()
     transformer = EquivalentTransformer(20)
