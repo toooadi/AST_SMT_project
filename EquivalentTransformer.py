@@ -67,7 +67,7 @@ Passing the option --keep-generated files to the python command stores the gener
 """ 
 def main():
     parser = SmtLibParser()
-    transformer = EquivalentTransformer(5)
+    transformer = EquivalentTransformer(20)
     keep_generated_files = len(sys.argv) > 1 and sys.argv[1] == "--keep-generated-files"
 
     directory = "benchmarks/non-incremental/QF_LIA/20180326-Bromberger/more_slacked/CAV_2009_benchmarks/smt/10-vars"
