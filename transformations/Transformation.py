@@ -11,7 +11,7 @@ class Transformation:
         applied to formula f directly or any of its subformulae
     """
 
-    def is_applicable(self, f: pysmt.fnode) -> bool:
+    def is_applicable(self, f: pysmt.fnode.FNode) -> bool:
         pass
 
 
@@ -21,7 +21,7 @@ class Transformation:
         transformations, formula MUST be some kind of boolean operator (E.g. And, Or, LE, Eq)
     """
 
-    def is_directly_applicable(self, f: pysmt.fnode) -> bool:
+    def is_directly_applicable(self, f: pysmt.fnode.FNode) -> bool:
         return is_op_returns_bool(f)
 
     """
@@ -30,7 +30,7 @@ class Transformation:
         rather than f itself, the method will throw an error.
     """
 
-    def apply(self, f: pysmt.fnode) -> pysmt.fnode:
+    def apply(self, f: pysmt.fnode.FNode) -> pysmt.fnode.FNode:
         pass
 
     """
@@ -39,7 +39,7 @@ class Transformation:
         The transformation is performed directly on f, so if it is applicable to a subformula of f
         rather than f itself, the method will throw an error.
     """
-    def apply(self, f: pysmt.fnode, g: pysmt.fnode) -> pysmt.fnode:
+    def apply(self, f: pysmt.fnode.FNode, g: pysmt.fnode.FNode) -> pysmt.fnode.FNode:
         pass
 
     def is_generating_transformation(self):
