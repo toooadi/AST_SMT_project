@@ -1,5 +1,5 @@
 import multiprocessing.queues
-import AvailableTransformations as allTransformations
+import AvailableEquivalenceTransformations as allTransformations
 import random
 import os
 import multiprocessing
@@ -12,7 +12,7 @@ from pysmt.smtlib.parser import SmtLibParser
 import pysmt.smtlib.commands as commands
 import shutil
 import sys
-from helper.FormulaHelper import generate_int_formula
+from helper.FormulaHelper import generate_formula, solve_smt2_file
 from helper.CustomScript import smtlibscript_from_formula
 from helper.DirectoryHelper import make_subdirectory_list
 
@@ -45,8 +45,14 @@ class EquivalentTransformer:
         if (transformationId is None):
             transformationId = random.choices(applicable, weights=[allTransformations.weights[i] for i in applicable], k=1)[0]
         self.substituter.set_transformation(allTransformations.obj_dict[transformationId])
-        generating_formula = generate_int_formula(formula) if (generating_formula is None and allTransformations.obj_dict[transformationId].is_generating_transformation()) else generating_formula
+        generating_formula = generate_formula(formula) if (generating_formula is None and allTransformations.obj_dict[transformationId].is_generating_transformation()) else generating_formula
         return self.substituter.substitute(formula, generating_formula)
+
+def prepend_satisfiability(filename, satisfiability):
+    with open(filename, 'r+') as f:
+        content = f.read()
+        f.seek(0, 0)
+        f.write("(set-info :status " + satisfiability + ")\n" + content)
 
 def parse_args():
     try:
@@ -61,21 +67,6 @@ def parse_args():
     except:
         raise ValueError("Badly formatted arguments. Check for spelling mistakes and validity of passed directories.")
     
-def solve_smt2_file(filePath):
-    try:
-        solver = z3.Solver()
-        solver.add(z3.parse_smt2_file(filePath))
-        solver.set("timeout", Z3_TIMEOUT)
-
-        start_time = time.time()
-        result = solver.check()
-        end_time = time.time()
-
-        result_string = "sat" if result == z3.sat else "unsat" if result == z3.unsat else "timeout" if solver.reason_unknown() == "timeout" else "unknown"
-        return result_string, end_time - start_time
-    
-    except  Exception:
-        return "Error", 0
 
 def transform_and_solve(file_queue, result_queue, subDepth, doShuffling, keep_generated_files, measure_original_solving_time):
     parser = SmtLibParser()
@@ -91,7 +82,7 @@ def transform_and_solve(file_queue, result_queue, subDepth, doShuffling, keep_ge
             satisfiability = next(cmd.args[1] for cmd in script.filter_by_command_name([commands.SET_INFO]) if cmd.args[0] == ":status")
             original_solving_time = -1
             if (measure_original_solving_time):
-                satisfiability, original_solving_time = solve_smt2_file(file_path)
+                satisfiability, original_solving_time = solve_smt2_file(file_path, Z3_TIMEOUT)
 
             formula = script.get_last_formula()
 
@@ -102,18 +93,27 @@ def transform_and_solve(file_queue, result_queue, subDepth, doShuffling, keep_ge
             #daggify inserts a bunch of "let" clauses in the formula, making it way more illegible
             script.to_file(os.path.join("generated", file_path), daggify=False)
 
-            result_sat, solving_time_transformed = solve_smt2_file(os.path.join("generated", file_path))
+            result_sat, solving_time_transformed = solve_smt2_file(os.path.join("generated", file_path), Z3_TIMEOUT)
             result_queue.put((file_path, satisfiability, result_sat, original_solving_time, solving_time_transformed))
+            prepend_satisfiability(os.path.join("generated", file_path), result_sat)
 
             if (not keep_generated_files):
                 os.remove(os.path.join("generated", file_path))
             
+            smt_file.close()
             print("Processed " + file_path.split("/")[-1])
 
         except queue.Empty:
             time.sleep(random.random())
+        except NotImplementedError as e:
+            smt_file.close()
+            if (str(e).startswith("Unknown function")):
+                continue
+            else:
+                print(str(e) + "in file " + file_path.split("/")[-1])
         except Exception as e:
-            print(e)
+            smt_file.close()
+            print(str(e) + "in file " + file_path.split("/")[-1])
             continue
     #need this, deadlock for long executions otherwise
     result_queue.cancel_join_thread()

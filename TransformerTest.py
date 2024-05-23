@@ -1,6 +1,6 @@
 import unittest
 import pysmt.operators as op
-import AvailableTransformations as all
+import AvailableEquivalenceTransformations as all
 from EquivalentTransformer import EquivalentTransformer
 from pysmt.shortcuts import And, Or, Not, Exists, ForAll, Symbol
 

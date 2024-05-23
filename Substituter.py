@@ -4,6 +4,10 @@ from transformations.Transformation import Transformation
 from pysmt.shortcuts import get_env
 from helper.FormulaHelper import find_maxDepth
 import random
+import AvailableWeakeningsStrengthenings as allWeakeningsStrengthenings
+
+SAT = "sat"
+UNSAT = "unsat"
 
 class FirstOccurenceSubstituter:
     manager = FormulaManager(get_env())
@@ -16,6 +20,7 @@ class FirstOccurenceSubstituter:
     def set_transformation(self, transformation:Transformation):
         self.transformation = transformation
         self.manager = FormulaManager(get_env())
+        self.mapper = FnodeTMapper(self.manager)
         self.substituted = False
     
     def substitute(self, formula, generating_formula=None):
@@ -89,7 +94,58 @@ class NDepthSubstituter(FirstOccurenceSubstituter):
         finally:
             self.currentDepth -= 1
 
+def is_weakenable_strengthenable(formula):
+    return (formula.is_not() and formula.arg(0).is_equals()) or formula.is_lt() or formula.is_le()
+
+
+class DeepWeakenerStrengthener:
+    manager = FormulaManager(get_env())
+
+    def __init__(self, doShuffling=False) -> None:
+        self.doShuffling = doShuffling
+        self.satisfiability = ""
+        self.substituted = False
+        self.mapper = FNodeTMapperExt(self.manager)
+        self.currentDepth = -1
+
+    def set_satisfiability(self, satisfiability):
+        self.currentDepth = -1
+        self.substituted = False
+        self.satisfiability = satisfiability
+        self.manager = FormulaManager(get_env())
+        self.mapper = FNodeTMapperExt(self.manager)
+    
+    def substitute(self, formula, parity):
+        try:
+            self.currentDepth += 1
+
+            if (self.substituted):
+                return formula
             
+            if (is_weakenable_strengthenable(formula)):
+                candidates = allWeakeningsStrengthenings.STRENGTHEN if (self.satisfiability == SAT and parity < 0) or (self.satisfiability == UNSAT and parity > 0) else allWeakeningsStrengthenings.WEAKEN
+                candidates = [c for c in candidates if c.is_directly_applicable(formula)]
+                transformation = random.choice(candidates)
+                self.substituted = True
+                return transformation.apply(formula)
+
+            if(formula.is_not()):
+                return self.manager.Not(self.substitute(formula, parity * -1))
+            
+            sub_function = self.mapper.get_sub_function(formula.node_type())
+            if (sub_function):
+                children = list(formula.args())
+                if (self.doShuffling and self.currentDepth == 0):
+                    random.shuffle(children)
+
+                return sub_function(formula, [self.substitute(f, parity) for f in children])
+
+            return formula
+        
+        finally:
+            self.currentDepth -= 1
+
+
     
 
 class FnodeTMapper:
@@ -132,3 +188,24 @@ class FnodeTMapper:
     
     def subIff(self, formula, args):
         return self.manager.Iff(args[0], args[1])
+
+
+class FNodeTMapperExt(FnodeTMapper):
+    
+    def __init__(self, manager: FormulaManager) -> None:
+        super().__init__(manager)
+        extMap = {
+            op.LE: self.subLE,
+            op.LT: self.subLT,
+            op.EQUALS: self.subEq
+        }
+        self.map.update(extMap)
+
+    def subLE(self, formula, args):
+        return self.manager.LE(args[0], args[1])
+    
+    def subLT(self, formula, args):
+        return self.manager.LT(args[0], args[1])
+    
+    def subEq(self, formula, args):
+        return self.manager.Equals(args[0], args[1])

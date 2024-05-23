@@ -1,4 +1,4 @@
-from transformations import AbsorpAnd, AbsorpOr, DeMorgAnd, DeMorgOr, DistrAnd, DistrOr, ExistsNot, ExistsSplit, ForAllNot, ForAllSplit, IdempAnd, IdempOr, LogIdentAnd, LogIdentOr, DoubleNeg
+from transformations.equivalence import AbsorpAnd, AbsorpOr, DeMorgAnd, DeMorgOr, DistrAnd, DistrOr, ExistsNot, ExistsSplit, ForAllNot, ForAllSplit, IdempAnd, IdempOr, LogIdentAnd, LogIdentOr, DoubleNeg
 
 LOG_IDENT_AND = 0
 LOG_IDENT_OR = 1
