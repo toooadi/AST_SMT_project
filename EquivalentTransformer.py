@@ -6,18 +6,18 @@ import multiprocessing
 import z3
 import time
 import queue
+from datetime import datetime
 from Substituter import FirstOccurenceSubstituter, NDepthSubstituter
 from pysmt.smtlib.parser import SmtLibParser
 import pysmt.smtlib.commands as commands
-from pysmt.logics import QF_LIA, QF_LRA, QF_NIA, LIA
-import subprocess
 import shutil
 import sys
 from helper.FormulaHelper import generate_int_formula
 from helper.CustomScript import smtlibscript_from_formula
+from helper.DirectoryHelper import make_subdirectory_list
 
 NUM_TRANSFORMATIONS = 10
-NUM_PROCESSES = 4
+NUM_PROCESSES = 8
 Z3_TIMEOUT = 90000
 
 class EquivalentTransformer:
@@ -47,22 +47,6 @@ class EquivalentTransformer:
         self.substituter.set_transformation(allTransformations.obj_dict[transformationId])
         generating_formula = generate_int_formula(formula) if (generating_formula is None and allTransformations.obj_dict[transformationId].is_generating_transformation()) else generating_formula
         return self.substituter.substitute(formula, generating_formula)
-
-"""
-Recursively list subdirectories which contain .smt2-files.
-Subdirectories which do not contain .smt2-files are not listed
-"""    
-def make_subdirectory_list(directoryPath, subdirs):
-    added = False
-    if (not os.path.exists(directoryPath)):
-        raise ValueError("Direcory does not exist.")
-    for filename in os.listdir(directoryPath):
-        if (not added and filename.endswith(".smt2")):
-            added = True
-            subdirs.append(directoryPath)
-        filePath = os.path.join(directoryPath, filename)
-        if (os.path.isdir(filePath)):
-            make_subdirectory_list(filePath, subdirs)
 
 def parse_args():
     try:
@@ -96,6 +80,7 @@ def solve_smt2_file(filePath):
 def transform_and_solve(file_queue, result_queue, subDepth, doShuffling, keep_generated_files, measure_original_solving_time):
     parser = SmtLibParser()
     transformer = EquivalentTransformer(subDepth=subDepth, doShuffling=doShuffling)
+    file_path = ""
     
     while not file_queue.empty():
         try:
@@ -126,6 +111,9 @@ def transform_and_solve(file_queue, result_queue, subDepth, doShuffling, keep_ge
             print("Processed " + file_path.split("/")[-1])
 
         except queue.Empty:
+            time.sleep(random.random())
+        except Exception as e:
+            print(e)
             continue
     #need this, deadlock for long executions otherwise
     result_queue.cancel_join_thread()
@@ -158,12 +146,10 @@ def main():
     results = []
     result_queue = multiprocessing.Queue()
 
-    if not os.path.exists("./generated"):
-        os.mkdir("./generated")
+    os.makedirs("generated", exist_ok=True)
 
     for dir in relevant_dirs:
-        if not os.path.exists(os.path.join("./generated", dir)):
-            os.makedirs(os.path.join("./generated", dir))
+        os.makedirs(os.path.join("generated", dir), exist_ok=True)
         for filename in os.listdir(dir):
             if filename.endswith(".smt2"):
                 filepath_queue.put(os.path.join(dir, filename))
@@ -179,9 +165,17 @@ def main():
     for process in processes:
         process.join()
 
-    print("joined all")
+    print("All files processed. Printing to file.")
     while not result_queue.empty():
         results.append(result_queue.get())
+
+    os.makedirs("results", exist_ok=True)
+    with open(os.path.join("results", "run_" + datetime.now().strftime("%d-%m-%Y__%H%M") + ".txt"), "w") as f:
+        print("transformations:" + str(NUM_TRANSFORMATIONS) + ", subDepth: " + str(subDepth) + ", doShuffling: " + str(doShuffling) + ", dir: " + directory, file=f)
+        for result in results:
+            print(result, file=f)
+
+    
         
     if (not keep_generated_files):
         shutil.rmtree("./generated")
