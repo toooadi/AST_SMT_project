@@ -1,12 +1,19 @@
+import os
 import subprocess
-import z3
+
 
 def run_janus_command():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    janus_path = os.path.join(script_dir, 'janus', 'bin', 'janus')
+    example_path = os.path.join(script_dir, 'janus', 'examples', 'phi1.smt2')
+    print("Janus path:", janus_path)
+    print("Example path:", example_path)
+
     command = [
-        'py', '../janus/bin/janus', 'z3',
+        'py', janus_path, 'z3',
         '--rule-set', 'operator-replacement',
         '-o', 'sat',
-        '../examples/phi1.smt2'
+        example_path
     ]
     
     try:
