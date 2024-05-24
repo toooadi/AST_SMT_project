@@ -12,7 +12,7 @@ from pysmt.smtlib.parser import SmtLibParser
 import pysmt.smtlib.commands as commands
 import shutil
 import sys
-from helper.FormulaHelper import generate_formula, solve_smt2_file
+from helper.FormulaHelper import generate_formula, solve_smt2_file, solve_smt2_file_cvc5
 from helper.CustomScript import smtlibscript_from_formula
 from helper.DirectoryHelper import make_subdirectory_list
 
@@ -82,7 +82,7 @@ def transform_and_solve(file_queue, result_queue, subDepth, doShuffling, keep_ge
             satisfiability = next(cmd.args[1] for cmd in script.filter_by_command_name([commands.SET_INFO]) if cmd.args[0] == ":status")
             original_solving_time = -1
             if (measure_original_solving_time):
-                satisfiability, original_solving_time = solve_smt2_file(file_path, Z3_TIMEOUT)
+                satisfiability, original_solving_time = solve_smt2_file_cvc5(file_path, Z3_TIMEOUT)
 
             formula = script.get_last_formula()
 
@@ -93,7 +93,7 @@ def transform_and_solve(file_queue, result_queue, subDepth, doShuffling, keep_ge
             #daggify inserts a bunch of "let" clauses in the formula, making it way more illegible
             script.to_file(os.path.join("generated", file_path), daggify=False)
 
-            result_sat, solving_time_transformed = solve_smt2_file(os.path.join("generated", file_path), Z3_TIMEOUT)
+            result_sat, solving_time_transformed = solve_smt2_file_cvc5(os.path.join("generated", file_path), Z3_TIMEOUT)
             result_queue.put((file_path.split("/")[-1], satisfiability, result_sat, original_solving_time, solving_time_transformed))
             prepend_satisfiability(os.path.join("generated", file_path), result_sat)
 
