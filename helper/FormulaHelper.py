@@ -1,8 +1,10 @@
+import subprocess
 import time
 import pysmt.fnode
 import string
 import random
 import z3
+import cvc5
 from functools import reduce
 from pysmt.typing import INT, BOOL, REAL
 from pysmt.shortcuts import LE, GE, And, Or, Int, Symbol, Real
@@ -57,11 +59,11 @@ def find_maxDepth(formula, curr):
                 return max(find_maxDepth(f, curr) for f in formula.args())
         return curr
 
-def solve_smt2_file(filePath, Z3_TIMEOUT):
+def solve_smt2_file(filePath, TIMEOUT):
     try:
         solver = z3.Solver()
         solver.add(z3.parse_smt2_file(filePath))
-        solver.set("timeout", Z3_TIMEOUT)
+        solver.set("timeout", TIMEOUT)
 
         start_time = time.time()
         result = solver.check()
@@ -71,3 +73,14 @@ def solve_smt2_file(filePath, Z3_TIMEOUT):
         return result_string, end_time - start_time
     except  Exception:
         return "Error", 0
+    
+def solve_smt2_file_cvc5(filePath, TIMEOUT=60000):
+    try:
+        start_time = time.time()
+        result = subprocess.run(["cvc5", "--tlimit=" + str(TIMEOUT), filePath], stdout=subprocess.PIPE)
+        end_time = time.time()
+        return result.stdout.decode('utf-8').strip("\n"), end_time - start_time
+    except Exception:
+         return "Error", 0
+
+
