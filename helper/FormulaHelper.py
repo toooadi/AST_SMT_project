@@ -75,7 +75,7 @@ def solve_smt2_file_z3(filePath, TIMEOUT):
         solver = z3.Solver()
         solver.add(z3.parse_smt2_file(filePath))
         solver.set("timeout", TIMEOUT)
-
+        
         start_time = time.time()
         result = solver.check()
         end_time = time.time()

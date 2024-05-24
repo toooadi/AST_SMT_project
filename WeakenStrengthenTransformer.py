@@ -44,7 +44,7 @@ def transform_and_solve(file_queue, result_queue, doShuffling, keep_generated_fi
             #daggify inserts a bunch of "let" clauses in the formula, making it way more illegible
             script.to_file(os.path.join("generated", "weakenedStrengthened", file_path), daggify=False)
 
-            result_sat, solving_time_transformed = solve_smt2_file(os.path.join("generated", "weakenedStrengthened", file_path, solver), Z3_TIMEOUT)
+            result_sat, solving_time_transformed = solve_smt2_file(os.path.join("generated", "weakenedStrengthened", file_path), Z3_TIMEOUT, solver=solver)
             result_queue.put((file_path.split("/")[-1], satisfiability, result_sat, solving_time_transformed))
 
             if (not keep_generated_files):
