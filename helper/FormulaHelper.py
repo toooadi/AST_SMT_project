@@ -1,14 +1,16 @@
+import random
+import string
 import subprocess
 import time
-import pysmt.fnode
-import string
-import random
-import z3
-import cvc5
 from functools import reduce
-from pysmt.typing import INT, BOOL, REAL
-from pysmt.shortcuts import LE, GE, And, Or, Int, Symbol, Real
+
+import cvc5
+import pysmt.fnode
+import z3
 from pysmt.operators import IRA_RELATIONS
+from pysmt.shortcuts import GE, LE, And, Int, Or, Real, Symbol
+from pysmt.typing import BOOL, INT, REAL
+
 
 def generate_free_unused(f: pysmt.fnode.FNode) -> str:
     quantVars = get_quant_vars(f)
@@ -59,7 +61,16 @@ def find_maxDepth(formula, curr):
                 return max(find_maxDepth(f, curr) for f in formula.args())
         return curr
 
-def solve_smt2_file(filePath, TIMEOUT):
+def solve_smt2_file(filePath, TIMEOUT, solver="z3"):
+    if (solver == "z3"):
+        return solve_smt2_file_z3(filePath, TIMEOUT)
+    elif (solver == "cvc5"):
+        res = solve_smt2_file_cvc5(filePath, TIMEOUT)
+        return res
+    else:
+        return "Error", 0
+
+def solve_smt2_file_z3(filePath, TIMEOUT):
     try:
         solver = z3.Solver()
         solver.add(z3.parse_smt2_file(filePath))
@@ -77,8 +88,10 @@ def solve_smt2_file(filePath, TIMEOUT):
 def solve_smt2_file_cvc5(filePath, TIMEOUT=60000):
     try:
         start_time = time.time()
+        
         result = subprocess.run(["cvc5", "--tlimit=" + str(TIMEOUT), filePath], stdout=subprocess.PIPE)
         end_time = time.time()
+
         return result.stdout.decode('utf-8').strip("\n"), end_time - start_time
     except Exception:
          return "Error", 0

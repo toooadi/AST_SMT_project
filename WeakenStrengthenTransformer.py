@@ -1,17 +1,19 @@
-import multiprocessing.queues
-import random
-import os
 import multiprocessing
-import time
+import multiprocessing.queues
+import os
 import queue
-from datetime import datetime
-from Substituter import DeepWeakenerStrengthener
-from pysmt.smtlib.parser import SmtLibParser
-import pysmt.smtlib.commands as commands
+import random
 import sys
-from helper.FormulaHelper import solve_smt2_file
+import time
+from datetime import datetime
+
+import pysmt.smtlib.commands as commands
+from pysmt.smtlib.parser import SmtLibParser
+
 from helper.CustomScript import smtlibscript_from_formula
 from helper.DirectoryHelper import make_subdirectory_list
+from helper.FormulaHelper import solve_smt2_file
+from Substituter import DeepWeakenerStrengthener
 
 SAT = "sat"
 UNSAT = "unsat"
@@ -19,7 +21,7 @@ NUM_TRANSFORMATIONS = 10
 Z3_TIMEOUT = 90000
 NUM_PROCESSES = 8
 
-def transform_and_solve(file_queue, result_queue, doShuffling, keep_generated_files):
+def transform_and_solve(file_queue, result_queue, doShuffling, keep_generated_files, solver="z3"):
     parser = SmtLibParser()
     substituter = DeepWeakenerStrengthener(doShuffling=doShuffling)
     file_path = ""
@@ -43,7 +45,7 @@ def transform_and_solve(file_queue, result_queue, doShuffling, keep_generated_fi
             script.to_file(os.path.join("generated", "weakenedStrengthened", file_path), daggify=False)
 
             result_sat, solving_time_transformed = solve_smt2_file(os.path.join("generated", "weakenedStrengthened", file_path), Z3_TIMEOUT)
-            result_queue.put((file_path.split("/")[-1], satisfiability, result_sat, solving_time_transformed))
+            result_queue.put((file_path.split("/")[-1], satisfiability, result_sat, solving_time_transformed), solver=solver)
 
             if (not keep_generated_files):
                 os.remove(os.path.join("generated", "weakenedStrengthened", file_path))
@@ -71,12 +73,13 @@ def parse_args():
         keep_generated_files = "--keep-generated-files" in sys.argv
         doShuffling = "--do-shuffling" in sys.argv
         directory = next(i for i in sys.argv if i.startswith("--dir")).split("=")[1]
-        return keep_generated_files, doShuffling, directory
+        solver = next(i for i in sys.argv if i.startswith("--solver")).split("=")[1]
+        return keep_generated_files, doShuffling, directory, solver
     except:
         raise ValueError("Badly formatted arguments. Check for spelling mistakes and validity of passed directories.")
 
 def main():
-    keep_generated_files, doShuffling, directory = parse_args()
+    keep_generated_files, doShuffling, directory, solver = parse_args()
     relevant_dirs = []
     make_subdirectory_list(directory, relevant_dirs)
     filepath_queue = multiprocessing.Queue()
@@ -93,11 +96,10 @@ def main():
             if filename.endswith(".smt2"):
                 filepath_queue.put(os.path.join(dir, filename))
 
-    print(filepath_queue.qsize())
 
     processes = []
     for _ in range(NUM_PROCESSES):
-        process = multiprocessing.Process(target=transform_and_solve, args=(filepath_queue, result_queue, doShuffling, keep_generated_files))
+        process = multiprocessing.Process(target=transform_and_solve, args=(filepath_queue, result_queue, doShuffling, keep_generated_files, solver))
         processes.append(process)
         process.start()
 
@@ -110,7 +112,7 @@ def main():
 
     os.makedirs("results/weakenedStrengthened", exist_ok=True)
     with open(os.path.join("results", "weakenedStrengthened", "run_" + datetime.now().strftime("%d-%m-%Y__%H%M") + ".txt"), "w") as f:
-        print("transformations:" + str(NUM_TRANSFORMATIONS) + ", doShuffling: " + str(doShuffling) + ", dir: " + directory, file=f)
+        print("transformations:" + str(NUM_TRANSFORMATIONS) + ", doShuffling: " + str(doShuffling) + ", dir: " + directory + ", solver:" + solver, file=f )
         for result in results:
             print(result, file=f)
 

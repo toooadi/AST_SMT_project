@@ -1,20 +1,22 @@
-import multiprocessing.queues
-import AvailableEquivalenceTransformations as allTransformations
-import random
-import os
 import multiprocessing
-import z3
-import time
+import multiprocessing.queues
+import os
 import queue
-from datetime import datetime
-from Substituter import FirstOccurenceSubstituter, NDepthSubstituter
-from pysmt.smtlib.parser import SmtLibParser
-import pysmt.smtlib.commands as commands
+import random
 import shutil
 import sys
-from helper.FormulaHelper import generate_formula, solve_smt2_file, solve_smt2_file_cvc5
+import time
+from datetime import datetime
+
+import pysmt.smtlib.commands as commands
+import z3
+from pysmt.smtlib.parser import SmtLibParser
+
+import AvailableEquivalenceTransformations as allTransformations
 from helper.CustomScript import smtlibscript_from_formula
 from helper.DirectoryHelper import make_subdirectory_list
+from helper.FormulaHelper import generate_formula, solve_smt2_file
+from Substituter import FirstOccurenceSubstituter, NDepthSubstituter
 
 NUM_TRANSFORMATIONS = 10
 NUM_PROCESSES = 8
@@ -58,17 +60,18 @@ def parse_args():
     try:
         keep_generated_files = "--keep-generated-files" in sys.argv
         doShuffling = "--do-shuffling" in sys.argv
-        measure_original_solving_time = "--measure_original_solving_time" in sys.argv
+        measure_original_solving_time = "--measure-original-solving-time" in sys.argv
         directory = next(i for i in sys.argv if i.startswith("--dir")).split("=")[1]
         subDepthFullArg = next((i for i in sys.argv if i.startswith("--sub-depth")), None)
         subDepth = int(subDepthFullArg.split("=")[1]) if subDepthFullArg else 0
-        return keep_generated_files, doShuffling, directory, subDepth, measure_original_solving_time
+        solver = next(i for i in sys.argv if i.startswith("--solver")).split("=")[1]
+        return keep_generated_files, doShuffling, directory, subDepth, measure_original_solving_time, solver
 
     except:
         raise ValueError("Badly formatted arguments. Check for spelling mistakes and validity of passed directories.")
     
 
-def transform_and_solve(file_queue, result_queue, subDepth, doShuffling, keep_generated_files, measure_original_solving_time):
+def transform_and_solve(file_queue, result_queue, subDepth, doShuffling, keep_generated_files, measure_original_solving_time, solver):
     parser = SmtLibParser()
     transformer = EquivalentTransformer(subDepth=subDepth, doShuffling=doShuffling)
     file_path = ""
@@ -82,7 +85,7 @@ def transform_and_solve(file_queue, result_queue, subDepth, doShuffling, keep_ge
             satisfiability = next(cmd.args[1] for cmd in script.filter_by_command_name([commands.SET_INFO]) if cmd.args[0] == ":status")
             original_solving_time = -1
             if (measure_original_solving_time):
-                satisfiability, original_solving_time = solve_smt2_file_cvc5(file_path, Z3_TIMEOUT)
+                satisfiability, original_solving_time = solve_smt2_file(file_path, Z3_TIMEOUT, solver=solver)
 
             formula = script.get_last_formula()
 
@@ -93,7 +96,7 @@ def transform_and_solve(file_queue, result_queue, subDepth, doShuffling, keep_ge
             #daggify inserts a bunch of "let" clauses in the formula, making it way more illegible
             script.to_file(os.path.join("generated", file_path), daggify=False)
 
-            result_sat, solving_time_transformed = solve_smt2_file_cvc5(os.path.join("generated", file_path), Z3_TIMEOUT)
+            result_sat, solving_time_transformed = solve_smt2_file(os.path.join("generated", file_path), Z3_TIMEOUT, solver=solver)
             result_queue.put((file_path.split("/")[-1], satisfiability, result_sat, original_solving_time, solving_time_transformed))
             prepend_satisfiability(os.path.join("generated", file_path), result_sat)
 
@@ -132,9 +135,11 @@ AVAILABLE OPTIONS:
 --sub-depth=<substitution Depth as int> : VERY RECOMMENDED (high number), determines the depth at which the substitution should be performed, if possible
 --keep-generated-files : keeps the newly generated files in a dedicated /generated/ directory
 --do-shuffling : RECOMMENDED, occasionally shuffles the top level formula so that it's not always the same subformula being modified
+--measure-original-solving-time : measures the solving time of the original formula before the transformations are applied
+--solver=<solver> : specifies the solver to be used for solving the formulas.
 """ 
 def main():
-    keep_generated_files, doShuffling, directory, subDepth, measure_original_solving_time = parse_args()
+    keep_generated_files, doShuffling, directory, subDepth, measure_original_solving_time, solver = parse_args()
 
     #directory = "benchmarks/non-incremental/QF_LIA/20180326-Bromberger/more_slacked/CAV_2009_benchmarks/smt/10-vars"
     relevant_dirs = []
@@ -154,11 +159,10 @@ def main():
             if filename.endswith(".smt2"):
                 filepath_queue.put(os.path.join(dir, filename))
 
-    print(filepath_queue.qsize())
 
     processes = []
     for _ in range(NUM_PROCESSES):
-        process = multiprocessing.Process(target=transform_and_solve, args=(filepath_queue, result_queue, subDepth, doShuffling, keep_generated_files, measure_original_solving_time))
+        process = multiprocessing.Process(target=transform_and_solve, args=(filepath_queue, result_queue, subDepth, doShuffling, keep_generated_files, measure_original_solving_time, solver))
         processes.append(process)
         process.start()
 
