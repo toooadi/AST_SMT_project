@@ -130,7 +130,7 @@ class DeepWeakenerStrengthener:
                 return transformation.apply(formula)
 
             if(formula.is_not()):
-                return self.manager.Not(self.substitute(formula, parity * -1))
+                return self.manager.Not(self.substitute(formula.arg(0), parity * -1))
             
             sub_function = self.mapper.get_sub_function(formula.node_type())
             if (sub_function):
