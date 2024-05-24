@@ -2,4 +2,5 @@ __pycache__
 benchmarks
 .vscode
 generated
+semantic-fusion-seeds
 results
