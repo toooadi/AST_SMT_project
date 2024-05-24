@@ -94,7 +94,7 @@ def transform_and_solve(file_queue, result_queue, subDepth, doShuffling, keep_ge
             script.to_file(os.path.join("generated", file_path), daggify=False)
 
             result_sat, solving_time_transformed = solve_smt2_file(os.path.join("generated", file_path), Z3_TIMEOUT)
-            result_queue.put((file_path, satisfiability, result_sat, original_solving_time, solving_time_transformed))
+            result_queue.put((file_path.split("/")[-1], satisfiability, result_sat, original_solving_time, solving_time_transformed))
             prepend_satisfiability(os.path.join("generated", file_path), result_sat)
 
             if (not keep_generated_files):
