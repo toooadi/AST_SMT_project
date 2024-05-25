@@ -16,4 +16,4 @@ class WeakenEquals(NonTrivialTransformation):
         left = f.arg(0)
         right = f.arg(1)
 
-        return LE(left, right) if random.random < 0.5 else GE(left, right)
+        return LE(left, right) if random.random() < 0.5 else GE(left, right)

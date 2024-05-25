@@ -95,7 +95,7 @@ class NDepthSubstituter(FirstOccurenceSubstituter):
             self.currentDepth -= 1
 
 def is_weakenable_strengthenable(formula):
-    return (formula.is_not() and formula.arg(0).is_equals()) or formula.is_lt() or formula.is_le()
+    return (formula.is_not() and formula.arg(0).is_equals()) or formula.is_lt() or formula.is_le() or formula.is_equals()
 
 
 class DeepWeakenerStrengthener:
@@ -132,8 +132,14 @@ class DeepWeakenerStrengthener:
             if(formula.is_not()):
                 return self.manager.Not(self.substitute(formula.arg(0), parity * -1))
             
+            if (formula.is_implies()):
+                return self.substitute(self.manager.Or(self.manager.Not(formula.arg(0)), formula.arg(1)), parity)
+            
+            if (formula.is_iff()):
+                return self.substitute(self.manager.Or(self.manager.And(formula.arg(0), formula.arg(1)), self.manager.And(self.manager.Not(formula.arg(0)), self.manager.Not(formula.arg(1)))), parity)
+            
             sub_function = self.mapper.get_sub_function(formula.node_type())
-            if (sub_function):
+            if (sub_function and (formula.is_and() or formula.is_or() or formula.is_exists())):
                 children = list(formula.args())
                 if (self.doShuffling and self.currentDepth == 0):
                     random.shuffle(children)

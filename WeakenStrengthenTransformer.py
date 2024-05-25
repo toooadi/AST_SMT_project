@@ -26,47 +26,49 @@ def transform_and_solve(file_queue, result_queue, doShuffling, keep_generated_fi
     substituter = DeepWeakenerStrengthener(doShuffling=doShuffling)
     file_path = ""
 
-    while not file_queue.empty():
-        try:
-            file_path = file_queue.get_nowait()
-            smt_file = open(file_path, "r")
-            script = parser.get_script(smt_file)
+    try:
+        while not file_queue.empty():
+            try:
+                file_path = file_queue.get_nowait()
+                smt_file = open(file_path, "r")
+                script = parser.get_script(smt_file)
 
-            satisfiability = next(cmd.args[1] for cmd in script.filter_by_command_name([commands.SET_INFO]) if cmd.args[0] == ":status")
-            
-            formula = script.get_last_formula()
+                satisfiability = next(cmd.args[1] for cmd in script.filter_by_command_name([commands.SET_INFO]) if cmd.args[0] == ":status")
+                
+                formula = script.get_last_formula()
 
-            substituter.set_satisfiability(satisfiability)
-            for _ in range(NUM_TRANSFORMATIONS):
-                formula = substituter.substitute(formula, 1)
+                substituter.set_satisfiability(satisfiability)
+                for _ in range(NUM_TRANSFORMATIONS):
+                    formula = substituter.substitute(formula, 1)
 
-            script = smtlibscript_from_formula(formula)
-            #daggify inserts a bunch of "let" clauses in the formula, making it way more illegible
-            script.to_file(os.path.join("generated", "weakenedStrengthened", file_path), daggify=False)
+                script = smtlibscript_from_formula(formula)
+                #daggify inserts a bunch of "let" clauses in the formula, making it way more illegible
+                script.to_file(os.path.join("generated", "weakenedStrengthened", file_path), daggify=False)
 
-            result_sat, solving_time_transformed = solve_smt2_file(os.path.join("generated", "weakenedStrengthened", file_path), Z3_TIMEOUT, solver=solver)
-            result_queue.put((file_path.split("/")[-1], satisfiability, result_sat, solving_time_transformed))
+                result_sat, solving_time_transformed = solve_smt2_file(os.path.join("generated", "weakenedStrengthened", file_path), Z3_TIMEOUT, solver=solver)
+                result_queue.put((file_path.split("/")[-1], satisfiability, result_sat, solving_time_transformed))
 
-            if (not keep_generated_files):
-                os.remove(os.path.join("generated", "weakenedStrengthened", file_path))
-            
-            smt_file.close()
-            print("Processed " + file_path.split("/")[-1])
+                if (not keep_generated_files):
+                    os.remove(os.path.join("generated", "weakenedStrengthened", file_path))
+                
+                smt_file.close()
+                print("Processed " + file_path.split("/")[-1])
 
-        except queue.Empty:
-            time.sleep(random.random())
-        except NotImplementedError as e:
-            smt_file.close()
-            if (str(e).startswith("Unknown function")):
-                continue
-            else:
+            except queue.Empty:
+                time.sleep(random.random())
+            except NotImplementedError as e:
+                smt_file.close()
+                if (str(e).startswith("Unknown function")):
+                    continue
+                else:
+                    print(str(e) + "in file " + file_path.split("/")[-1])
+            except Exception as e:
+                smt_file.close()
                 print(str(e) + "in file " + file_path.split("/")[-1])
-        except Exception as e:
-            smt_file.close()
-            print(str(e) + "in file " + file_path.split("/")[-1])
-            continue
-    #need this, deadlock for long executions otherwise
-    result_queue.cancel_join_thread()
+                continue
+    finally:
+        #need this, deadlock for long executions otherwise
+        result_queue.cancel_join_thread()
 
 def parse_args():
     try:
