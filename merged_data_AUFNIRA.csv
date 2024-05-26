@@ -1,0 +1,3 @@
+Filename,Benchmark_Satisfiability,Post_Transform_Satisfiability,Pre_Transform_Solving_Time,Post_Transform_Solving_Time,Post_Transform_Solving_Time_second
+smtlib.629335.smt2,unsat,unsat,0.0185611248016357,0.0065701007843017,0.0144402980804443
+smtlib.622079.smt2,unsat,unsat,0.4573049545288086,0.038226842880249,0.006706953048706

@@ -1,0 +1,7 @@
+Filename,Benchmark_Satisfiability,Post_Transform_Satisfiability,Pre_Transform_Solving_Time,Post_Transform_Solving_Time,Post_Transform_Solving_Time_second
+bubble_sort2.c.smt2,unsat,unsat,0.2390460968017578,0.1062572002410888,0.2147629261016845
+no_init_selection_sort_unsafe2.c.smt2,sat,sat,0.263740062713623,0.1029098033905029,0.2030987739562988
+no_init_bubble_sort_safe2.c.smt2,unsat,unsat,0.3021650314331054,0.0994429588317871,0.2137577533721923
+no_init_bubble_sort_unsafe2.c.smt2,sat,sat,0.2988331317901611,0.2751390933990478,0.3091261386871338
+selection_sort2.c.smt2,unsat,unsat,0.2933928966522217,0.2925188541412353,0.035715103149414
+no_init_selection_sort_safe2.c.smt2,unsat,unsat,0.2983608245849609,0.2943308353424072,0.2044820785522461

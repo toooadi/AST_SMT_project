@@ -1,0 +1,8 @@
+(set-logic LIA)
+(assert (not (forall ((?Y Int)(?Z Int)) (=> (<= 2 ?Z) (exists ((?X Int)) (and (< 0 ?X) (< ?X ?Z) (not (= ?Y ?X))))))))
+
+(check-sat)
+
+
+
+(assert (not (forall ((?Y Int) (?Z Int)) (=> (< 2 ?Z) (exists ((?X Int)) (and (< 0 ?X) (< ?X ?Z) (not (= ?Y ?X))))))))

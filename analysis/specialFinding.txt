@@ -1,0 +1,39 @@
+generated/semantic-fusion-seeds/LIA/unsat/ARI592-1.smt2 
+
+(set-info :status unsat)
+(set-logic LIA)
+(declare-fun Z () Bool)
+(declare-fun e () Bool)
+(declare-fun C () Bool)
+(assert (or (and (not (or (and (and (forall ((?Y Int)(?Z Int)) (=> (< 2 ?Z) (exists ((?X Int)) (and (< 0 ?X) (< ?X ?Z) (not (= ?Y ?X)))))) (or (forall ((?Y Int)(?Z Int)) (=> (< 2 ?Z) (exists ((?X Int)) (and (< 0 ?X) (< ?X ?Z) (not (= ?Y ?X)))))) (or Z (and e C)))) (or (or C (and e Z)) (not (or C (and e Z))))) (and (and (forall ((?Y Int)(?Z Int)) (=> (< 2 ?Z) (exists ((?X Int)) (and (< 0 ?X) (< ?X ?Z) (not (= ?Y ?X)))))) (or (forall ((?Y Int)(?Z Int)) (=> (< 2 ?Z) (exists ((?X Int)) (and (< 0 ?X) (< ?X ?Z) (not (= ?Y ?X)))))) (or Z (and e C)))) (or (or C (and e Z)) (not (or C (and e Z))))))) (or Z (and e C))) (not (forall ((?Y Int)(?Z Int)) (=> (< 2 ?Z) (exists ((?X Int)) (and (< 0 ?X) (< ?X ?Z) (not (= ?Y ?X)))))))))
+(check-sat)
+
+
+
+generated/semantic-fusion-seeds/LIA/unsat/ARI572-1.smt2
+
+(set-info :status unsat)
+(set-logic LIA)
+(declare-fun G () Bool)
+(declare-fun O () Bool)
+(declare-fun r () Bool)
+(assert (or (not (forall ((?Y Int)(?X Int)) (or (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X)) (or (and (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X)) r) (and (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X)) (and O G)))))) (and (not (or (or (and (forall ((?Y Int)(?X Int)) (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X))) (or (forall ((?Y Int)(?X Int)) (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X))) (or O (and r G)))) (and (and (forall ((?Y Int)(?X Int)) (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X))) (or (forall ((?Y Int)(?X Int)) (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X))) (or O (and r G)))) (or O (and G r)))) (and (or r (and O G)) (not (or r (and O G)))))) (or r (and O G)))))
+(check-sat)
+
+generated/weakenedStrengthened/generated/semantic-fusion-seeds/LIA/unsat/ARI572-1.smt2
+
+(set-logic LIA)
+(declare-fun Z () Bool)
+(declare-fun e () Bool)
+(declare-fun C () Bool)
+(assert (or (not (forall ((?Y Int)(?Z Int)) (=> (<= 2 ?Z) (exists ((?X Int)) (and (< 0 ?X) (< ?X ?Z) (not (= ?Y ?X))))))) (and (not (or (and (and (forall ((?Y Int)(?Z Int)) (=> (< 2 ?Z) (exists ((?X Int)) (and (< 0 ?X) (< ?X ?Z) (not (= ?Y ?X)))))) (or (forall ((?Y Int)(?Z Int)) (=> (< 2 ?Z) (exists ((?X Int)) (and (< 0 ?X) (< ?X ?Z) (not (= ?Y ?X)))))) (or Z (and e C)))) (or (or C (and e Z)) (not (or C (and e Z))))) (and (and (forall ((?Y Int)(?Z Int)) (=> (< 2 ?Z) (exists ((?X Int)) (and (< 0 ?X) (< ?X ?Z) (not (= ?Y ?X)))))) (or (forall ((?Y Int)(?Z Int)) (=> (< 2 ?Z) (exists ((?X Int)) (and (< 0 ?X) (< ?X ?Z) (not (= ?Y ?X)))))) (or Z (and e C)))) (or (or C (and e Z)) (not (or C (and e Z))))))) (or Z (and e C)))))
+(check-sat)
+
+generated/weakenedStrengthened/generated/semantic-fusion-seeds/LIA/unsat/ARI572-1.smt2
+
+(set-logic LIA)
+(declare-fun G () Bool)
+(declare-fun O () Bool)
+(declare-fun r () Bool)
+(assert (or (and (not (or (or (and (forall ((?X Int)(?Y Int)) (=> (not (= (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y)))) (< ?Y ?X))) (or (forall ((?X Int)(?Y Int)) (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X))) (or O (and r G)))) (and (and (forall ((?X Int)(?Y Int)) (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X))) (or (forall ((?X Int)(?Y Int)) (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X))) (or O (and r G)))) (or O (and G r)))) (and (or r (and O G)) (not (or r (and O G)))))) (or r (and O G))) (not (forall ((?X Int)(?Y Int)) (or (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X)) (or (and (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X)) r) (and (=> (< (+ ?Y (* (- 1) ?X)) (+ ?X (* (- 1) ?Y))) (< ?Y ?X)) (and O G))))))))
+(check-sat)
