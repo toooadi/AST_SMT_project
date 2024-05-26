@@ -45,3 +45,7 @@ In the usual testing pipline, we first run `EquivalenTransformer.py` and then ru
 > python EquivalentTransformer.py --sub-depth=10 --do-shuffling --dir=semantic-fusion-seeds/LIA/sat --keep-generated-files
 
 Both transformers store a file containing their respective results in **/results/**.
+
+# Results
+
+The results supporting the claims made in the Results section of the accompanying paper can be found in the **/analysis/** directory. It is divided into plots which contain plots, results of the substitution depth analysis and the rest of the results as CSV files.
