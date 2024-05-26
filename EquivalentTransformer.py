@@ -64,7 +64,7 @@ def parse_args():
         directory = next(i for i in sys.argv if i.startswith("--dir")).split("=")[1]
         subDepthFullArg = next((i for i in sys.argv if i.startswith("--sub-depth")), None)
         subDepth = int(subDepthFullArg.split("=")[1]) if subDepthFullArg else 0
-        solver = next(i for i in sys.argv if i.startswith("--solver")).split("=")[1]
+        solver = next((i for i in sys.argv if i.startswith("--solver")), "--solver=z3").split("=")[1]
         return keep_generated_files, doShuffling, directory, subDepth, measure_original_solving_time, solver
 
     except:

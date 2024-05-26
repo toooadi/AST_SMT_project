@@ -75,7 +75,7 @@ def parse_args():
         keep_generated_files = "--keep-generated-files" in sys.argv
         doShuffling = "--do-shuffling" in sys.argv
         directory = next(i for i in sys.argv if i.startswith("--dir")).split("=")[1]
-        solver = next(i for i in sys.argv if i.startswith("--solver")).split("=")[1]
+        solver = next((i for i in sys.argv if i.startswith("--solver")), "--solver=z3").split("=")[1]
         return keep_generated_files, doShuffling, directory, solver
     except:
         raise ValueError("Badly formatted arguments. Check for spelling mistakes and validity of passed directories.")
